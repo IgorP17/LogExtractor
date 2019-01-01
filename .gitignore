@@ -3,3 +3,4 @@ log_files/*
 data.txt
 .idea/vcs.xml
 .idea/workspace.xml
+out/*
