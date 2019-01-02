@@ -1,7 +1,5 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Objects;
+import java.util.*;
 
 public class LogExtractor {
 
@@ -12,6 +10,8 @@ public class LogExtractor {
             sSearchString = "",
             sBeforeTimestamp = "",
             sFileSeparator = "";
+
+    private static List<String> lIgnoredFiles = new ArrayList<>();
 
     private static ArrayList<LogEntry> entryArrayList = new ArrayList<>();
 
@@ -97,6 +97,9 @@ public class LogExtractor {
                             case "SEPARATOR":
                                 sFileSeparator = paramValue;
                                 break;
+                            case "IGNORED_FILES_CONTANS":
+                                lIgnoredFiles = Arrays.asList(paramValue.split(";"));
+                                break;
                         }
                     }
                 }
@@ -126,23 +129,35 @@ public class LogExtractor {
         } else {
             System.out.println("INFO: Delimiter is " + sDelimiter);
         }
+
         if (sSearchString.length() == 0) {
             System.out.println("ERROR: No search string!");
             System.exit(1);
         } else {
             System.out.println("INFO: Search string is " + sSearchString);
         }
+
         if (sBeforeTimestamp.length() == 0) {
             System.out.println("ERROR: No prefix string!");
             System.exit(1);
         } else {
             System.out.println("INFO: Prefix string is " + sBeforeTimestamp);
         }
+
         if (sFileSeparator.length() == 0) {
             System.out.println("ERROR: No file separator!");
             System.exit(1);
         } else {
             System.out.println("INFO: File separator is " + sFileSeparator);
+        }
+
+        // Ignored files
+        if (lIgnoredFiles.isEmpty()) {
+            System.out.println("WARNING: No ignored files!");
+        } else {
+            for (String ignored: lIgnoredFiles) {
+                System.out.println("INFO: Ignored file contains " + ignored);
+            }
         }
 
     }
@@ -154,6 +169,14 @@ public class LogExtractor {
      */
     private static void processLogFile(File fileEntryForProcess) {
         try {
+            // IF ignore
+            for (String ignore: lIgnoredFiles) {
+                if (fileEntryForProcess.toString().contains(ignore)){
+                    System.out.println("WARNING: Ignore file " + fileEntryForProcess);
+                    return;
+                }
+            }
+
             // start reading file
             System.out.println("INFO: Analyze file " + fileEntryForProcess);
             // start reading
