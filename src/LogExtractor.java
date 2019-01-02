@@ -1,13 +1,17 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 
 public class LogExtractor {
 
-    private static String sLogDir = "", sOutDir = "", sDelimiter = "", sSearchString, sBeforeTimestamp;
+    private static String
+            sLogDir = "",
+            sResultFile = "",
+            sDelimiter = "",
+            sSearchString = "",
+            sBeforeTimestamp = "",
+            sFileSeparator = "";
 
     private static ArrayList<LogEntry> entryArrayList = new ArrayList<>();
 
@@ -32,13 +36,21 @@ public class LogExtractor {
                 }*/
             }
 
-/*
-            for (LogEntry entry : entryArrayList) {
-                System.out.println(entry.getsFileName());
-                System.out.println(entry.getTranData());
-            }
-*/
+            // Sort ArrayList by Timestamp
+            System.out.println("INFO: Sorting entries...");
+            entryArrayList.sort(Comparator.comparing(LogEntry::getlTimestamp));
 
+            // Write to file
+            System.out.println("INFO: Writing to file " + sResultFile);
+            PrintWriter writer = new PrintWriter(sResultFile, "UTF-8");
+
+            for (LogEntry entry : entryArrayList) {
+//                System.out.println(entry.getsFileName());
+//                System.out.println(entry.getTranData());
+                writer.println("\t\t" + sFileSeparator + " " + entry.getsFileName() + " " + sFileSeparator);
+                writer.println(entry.getTranData());
+            }
+            writer.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,8 +82,8 @@ public class LogExtractor {
                             case "LOG_DIR":
                                 sLogDir = paramValue;
                                 break;
-                            case "OUT_DIR":
-                                sOutDir = paramValue;
+                            case "RESULT_FILE":
+                                sResultFile = paramValue;
                                 break;
                             case "DELIMITER":
                                 sDelimiter = paramValue;
@@ -81,6 +93,9 @@ public class LogExtractor {
                                 break;
                             case "BEFORE_TIMESTAMP":
                                 sBeforeTimestamp = paramValue;
+                                break;
+                            case "SEPARATOR":
+                                sFileSeparator = paramValue;
                                 break;
                         }
                     }
@@ -98,11 +113,11 @@ public class LogExtractor {
             System.out.println("INFO: Log dir is " + sLogDir);
         }
 
-        if (sOutDir.length() == 0) {
-            System.out.println("ERROR: No out dir!");
+        if (sResultFile.length() == 0) {
+            System.out.println("ERROR: No result file!");
             System.exit(1);
         } else {
-            System.out.println("INFO: Out dir is " + sOutDir);
+            System.out.println("INFO: Result file is " + sResultFile);
         }
 
         if (sDelimiter.length() == 0) {
@@ -122,6 +137,12 @@ public class LogExtractor {
             System.exit(1);
         } else {
             System.out.println("INFO: Prefix string is " + sBeforeTimestamp);
+        }
+        if (sFileSeparator.length() == 0) {
+            System.out.println("ERROR: No file separator!");
+            System.exit(1);
+        } else {
+            System.out.println("INFO: File separator is " + sFileSeparator);
         }
 
     }
