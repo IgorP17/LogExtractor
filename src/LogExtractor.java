@@ -2,11 +2,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class LogExtractor {
 
-    private static String sLogDir = "", sOutDir = "", sDelimiter = "", sSearchString;
+    private static String sLogDir = "", sOutDir = "", sDelimiter = "", sSearchString, sBeforeTimestamp;
+
+    private static ArrayList<LogEntry> entryArrayList = new ArrayList<>();
 
     public static void main(String[] args) {
         try {
@@ -28,6 +31,15 @@ public class LogExtractor {
                     //listFilesForFolder(fileEntry);
                 }*/
             }
+
+/*
+            for (LogEntry entry : entryArrayList) {
+                System.out.println(entry.getsFileName());
+                System.out.println(entry.getTranData());
+            }
+*/
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -67,6 +79,9 @@ public class LogExtractor {
                             case "SEARCH_STRING":
                                 sSearchString = paramValue;
                                 break;
+                            case "BEFORE_TIMESTAMP":
+                                sBeforeTimestamp = paramValue;
+                                break;
                         }
                     }
                 }
@@ -102,6 +117,12 @@ public class LogExtractor {
         } else {
             System.out.println("INFO: Search string is " + sSearchString);
         }
+        if (sBeforeTimestamp.length() == 0) {
+            System.out.println("ERROR: No prefix string!");
+            System.exit(1);
+        } else {
+            System.out.println("INFO: Prefix string is " + sBeforeTimestamp);
+        }
 
     }
 
@@ -115,7 +136,6 @@ public class LogExtractor {
             // start reading file
             System.out.println("INFO: Analyze file " + fileEntryForProcess);
             // start reading
-
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(
                             new FileInputStream(fileEntryForProcess), "UTF8"));
@@ -123,18 +143,30 @@ public class LogExtractor {
             String str;
 
             // reading file
-            boolean isFirstDelimiter = true;
+            boolean isFirstAfterDelimiter = false;
             LogEntry logEntry = new LogEntry(fileEntryForProcess.getName());
 
             while ((str = in.readLine()) != null) {
                 // if line starts with delimiter
                 if (str.startsWith(sDelimiter)) {
-                    isFirstDelimiter = false;
-                    // Добавим *****
-                    logEntry.appendTranData(str);
+                    // check if save needed and start new entry
+                    if (logEntry.isForSave()) entryArrayList.add(logEntry);
+                    logEntry = new LogEntry(fileEntryForProcess.getName());
+                    isFirstAfterDelimiter = true;
+                }
+                // add string
+                logEntry.appendTranData(str + "\r\n");
+
+                // if string starts with prefix and it is first after delimiter
+                if (isFirstAfterDelimiter && str.startsWith(sBeforeTimestamp)) {
+                    isFirstAfterDelimiter = false;
+                    // extract timestamp
+                    //>>1545643874.287122:
+                    logEntry.setlTimestamp(Long.valueOf(str.substring(2, 19).replace(".", "")));
                 }
 
-
+                // if string contains search string - fill the flag
+                if (str.contains(sSearchString)) logEntry.setForSave(true);
 
             }
         } catch (Exception e) {

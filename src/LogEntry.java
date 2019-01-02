@@ -16,6 +16,11 @@ public class LogEntry {
         sTranData.append(s);
     }
 
+    // get data
+    public StringBuffer getTranData(){
+        return sTranData;
+    }
+
     // get timestamp
     public long getlTimestamp() {
         return lTimestamp;
