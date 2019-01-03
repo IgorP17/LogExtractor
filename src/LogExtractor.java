@@ -127,7 +127,6 @@ public class LogExtractor {
                         logEntry.addSetFoundBy(s);
                     }
                 }
-
             }
         } catch (Exception e) {
             e.printStackTrace();
