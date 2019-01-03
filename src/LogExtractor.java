@@ -11,6 +11,8 @@ public class LogExtractor {
             sBeforeTimestamp = "",
             sFileSeparator = "";
 
+    private static HashMap<String, String> config = new HashMap<>();
+
     private static List<String> lIgnoredFiles = new ArrayList<>();
 
     private static List<String> lSearchStrings = new ArrayList<>();
@@ -67,8 +69,12 @@ public class LogExtractor {
 
                 writerBrief.println("FILE: "
                         + entry.getFileName()
-                        + "\tFound by "
+                        + "\tFound by: "
                         + entry.getStringSetFoundBy().toString()
+                        + "\t Timestamp: "
+                        + entry.getTimestamp() / 1000000L
+                        + "."
+                        + entry.getTimestamp() % 1000000L
                         + System.lineSeparator());
             }
             writer.close();
@@ -84,51 +90,20 @@ public class LogExtractor {
      */
     private static void readConfig() {
         try {
-            File fileDir = new File("config.cfg");
-            String paramName, paramValue;
+            FileInputStream fileInputStream;
+            Properties prop = new Properties();
+            //обращаемся к файлу и получаем данные
+            fileInputStream = new FileInputStream("config.properties");
+            prop.load(fileInputStream);
 
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(
-                            new FileInputStream(fileDir), "UTF8"));
-
-            String str;
-            // reading file
-            while ((str = in.readLine()) != null) {
-                if (!str.startsWith("#") && !str.trim().equals("")) { // это не комментарий и не пустая строка
-                    str = str.trim();
-                    if (str.contains("=")) {
-                        paramName = str.split("=")[0].trim();
-                        paramValue = str.split("=")[1].trim();
-
-                        switch (paramName) {
-                            case "LOG_DIR":
-                                sLogDir = paramValue;
-                                break;
-                            case "RESULT_FILE":
-                                sResultFile = paramValue;
-                                break;
-                            case "RESULT_FILE_MODULES":
-                                sResultFileModules = paramValue;
-                                break;
-                            case "DELIMITER":
-                                sDelimiter = paramValue;
-                                break;
-                            case "SEARCH_STRING":
-                                lSearchStrings = Arrays.asList(trimAll(paramValue.split(";")));
-                                break;
-                            case "BEFORE_TIMESTAMP":
-                                sBeforeTimestamp = paramValue;
-                                break;
-                            case "SEPARATOR":
-                                sFileSeparator = paramValue;
-                                break;
-                            case "IGNORED_FILES_CONTANS":
-                                lIgnoredFiles = Arrays.asList(trimAll(paramValue.split(";")));
-                                break;
-                        }
-                    }
-                }
-            }
+            sLogDir = prop.getProperty("LOG_DIR");
+            sResultFile = prop.getProperty("RESULT_FILE");
+            sResultFileModules = prop.getProperty("RESULT_FILE_MODULES");
+            sDelimiter = prop.getProperty("DELIMITER");
+            sBeforeTimestamp = prop.getProperty("BEFORE_TIMESTAMP");
+            lSearchStrings = Arrays.asList(trimAll(prop.getProperty("SEARCH_STRING").split(";")));
+            sFileSeparator = prop.getProperty("SEPARATOR");
+            lIgnoredFiles = Arrays.asList(trimAll(prop.getProperty("IGNORED_FILES_CONTAINS").split(";")));
         } catch (Exception e) {
             e.printStackTrace();
         }
