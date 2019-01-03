@@ -35,13 +35,22 @@ public class Config {
                 System.out.println(key + "=>" + value);
                 hConfig.put(key, current);
             }
+
+            // check data
+            if (!checkData()) System.exit(1);
             System.out.println("INFO: Done!");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public List<String> getValue(String key){
+    /**
+     * Return value from HashMap
+     *
+     * @param key config key
+     * @return config value as List
+     */
+    public List<String> getValue(String key) {
         return hConfig.get(key);
     }
 
@@ -57,5 +66,26 @@ public class Config {
             s[i] = s[i].trim();
         }
         return s;
+    }
+
+    private boolean checkData() {
+        System.out.println("INFO: Checking needed info...");
+        List<String> paramNames = new ArrayList<>();
+        paramNames.add("LOG_DIR");
+        paramNames.add("RESULT_FILE");
+        paramNames.add("RESULT_FILE_MODULES");
+        paramNames.add("DELIMITER");
+        paramNames.add("BEFORE_TIMESTAMP");
+        paramNames.add("SEARCH_STRING");
+        paramNames.add("SEPARATOR");
+
+        for (String s : paramNames){
+            if (hConfig.get(s) == null){
+                System.out.println("ERROR: Property " + s + " not found!");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
