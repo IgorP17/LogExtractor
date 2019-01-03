@@ -7,11 +7,12 @@ public class LogExtractor {
             sLogDir = "",
             sResultFile = "",
             sDelimiter = "",
-            sSearchString = "",
             sBeforeTimestamp = "",
             sFileSeparator = "";
 
     private static List<String> lIgnoredFiles = new ArrayList<>();
+
+    private static List<String> lSearchStrings = new ArrayList<>();
 
     private static ArrayList<LogEntry> entryArrayList = new ArrayList<>();
 
@@ -38,7 +39,7 @@ public class LogExtractor {
 
             // Sort ArrayList by Timestamp
             System.out.println("INFO: Sorting entries...");
-            entryArrayList.sort(Comparator.comparing(LogEntry::getlTimestamp));
+            entryArrayList.sort(Comparator.comparing(LogEntry::getTimestamp));
 
             // Write to file
             System.out.println("INFO: Writing to file " + sResultFile);
@@ -47,7 +48,18 @@ public class LogExtractor {
             for (LogEntry entry : entryArrayList) {
 //                System.out.println(entry.getsFileName());
 //                System.out.println(entry.getTranData());
-                writer.println("\t\t" + sFileSeparator + " " + entry.getsFileName() + " " + sFileSeparator);
+                writer.println();
+                writer.println("\t\t"
+                        + sFileSeparator
+                        + " FILE: "
+                        + entry.getFileName()
+                        + " "
+                        + sFileSeparator
+                        + " Found by: "
+                        + entry.getStringSetFoundBy().toString()
+                        + " "
+                        + sFileSeparator);
+                writer.println();
                 writer.println(entry.getTranData());
             }
             writer.close();
@@ -89,7 +101,7 @@ public class LogExtractor {
                                 sDelimiter = paramValue;
                                 break;
                             case "SEARCH_STRING":
-                                sSearchString = paramValue;
+                                lSearchStrings = Arrays.asList(paramValue.split(";"));
                                 break;
                             case "BEFORE_TIMESTAMP":
                                 sBeforeTimestamp = paramValue;
@@ -130,11 +142,13 @@ public class LogExtractor {
             System.out.println("INFO: Delimiter is " + sDelimiter);
         }
 
-        if (sSearchString.length() == 0) {
+        if (lSearchStrings.isEmpty()) {
             System.out.println("ERROR: No search string!");
             System.exit(1);
         } else {
-            System.out.println("INFO: Search string is " + sSearchString);
+            for (String s : lSearchStrings) {
+                System.out.println("INFO: Search string is " + s);
+            }
         }
 
         if (sBeforeTimestamp.length() == 0) {
@@ -206,11 +220,16 @@ public class LogExtractor {
                     isFirstAfterDelimiter = false;
                     // extract timestamp
                     //>>1545643874.287122:
-                    logEntry.setlTimestamp(Long.valueOf(str.substring(2, 19).replace(".", "")));
+                    logEntry.setTimestamp(Long.valueOf(str.substring(2, 19).replace(".", "")));
                 }
 
-                // if string contains search string - fill the flag
-                if (str.contains(sSearchString)) logEntry.setForSave(true);
+                // if string contains search string - fill the flag and add found by data
+                for (String s : lSearchStrings) {
+                    if (str.contains(s)){
+                        logEntry.setForSave(true);
+                        logEntry.addSetFoundBy(s);
+                    }
+                }
 
             }
         } catch (Exception e) {

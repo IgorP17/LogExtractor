@@ -1,9 +1,12 @@
+import java.util.HashSet;
+
 public class LogEntry {
 
     private long lTimestamp; // wo dot
     private String sFileName;
     private StringBuffer sTranData;
     private boolean isForSave = false;
+    private HashSet<String> stringSetFoundBy = new HashSet<>();
 
     // Constructor
     LogEntry (String sFileName){
@@ -13,7 +16,7 @@ public class LogEntry {
 
     // Append data
     public void appendTranData(String s){
-        sTranData.append(s);
+        this.sTranData.append(s);
     }
 
     // get data
@@ -22,17 +25,17 @@ public class LogEntry {
     }
 
     // get timestamp
-    public long getlTimestamp() {
+    public long getTimestamp() {
         return lTimestamp;
     }
 
     // get file name
-    public String getsFileName() {
+    public String getFileName() {
         return sFileName;
     }
 
     // set timestamp
-    public void setlTimestamp(long lTimestamp) {
+    public void setTimestamp(long lTimestamp) {
         this.lTimestamp = lTimestamp;
     }
 
@@ -42,6 +45,15 @@ public class LogEntry {
     }
     // For save setter
     public void setForSave(boolean forSave) {
-        isForSave = forSave;
+        this.isForSave = forSave;
+    }
+
+
+    public HashSet<String> getStringSetFoundBy() {
+        return stringSetFoundBy;
+    }
+
+    public void addSetFoundBy(String s) {
+        this.stringSetFoundBy.add(s);
     }
 }
