@@ -6,6 +6,7 @@ public class LogExtractor {
     private static String
             sLogDir = "",
             sResultFile = "",
+            sResultFileModules = "",
             sDelimiter = "",
             sBeforeTimestamp = "",
             sFileSeparator = "";
@@ -43,7 +44,9 @@ public class LogExtractor {
 
             // Write to file
             System.out.println("INFO: Writing to file " + sResultFile);
+            System.out.println("INFO: Writing to file " + sResultFileModules);
             PrintWriter writer = new PrintWriter(sResultFile, "UTF-8");
+            PrintWriter writerBrief = new PrintWriter(sResultFileModules, "UTF-8");
 
             for (LogEntry entry : entryArrayList) {
 //                System.out.println(entry.getsFileName());
@@ -51,7 +54,7 @@ public class LogExtractor {
                 writer.println();
                 writer.println("\t\t"
                         + sFileSeparator
-                        + " FILE: "
+                        + " File: "
                         + entry.getFileName()
                         + " "
                         + sFileSeparator
@@ -61,8 +64,15 @@ public class LogExtractor {
                         + sFileSeparator);
                 writer.println();
                 writer.println(entry.getTranData());
+
+                writerBrief.println("FILE: "
+                        + entry.getFileName()
+                        + "\tFound by "
+                        + entry.getStringSetFoundBy().toString()
+                        + System.lineSeparator());
             }
             writer.close();
+            writerBrief.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,11 +107,14 @@ public class LogExtractor {
                             case "RESULT_FILE":
                                 sResultFile = paramValue;
                                 break;
+                            case "RESULT_FILE_MODULES":
+                                sResultFileModules = paramValue;
+                                break;
                             case "DELIMITER":
                                 sDelimiter = paramValue;
                                 break;
                             case "SEARCH_STRING":
-                                lSearchStrings = Arrays.asList(paramValue.split(";"));
+                                lSearchStrings = Arrays.asList(trimAll(paramValue.split(";")));
                                 break;
                             case "BEFORE_TIMESTAMP":
                                 sBeforeTimestamp = paramValue;
@@ -110,7 +123,7 @@ public class LogExtractor {
                                 sFileSeparator = paramValue;
                                 break;
                             case "IGNORED_FILES_CONTANS":
-                                lIgnoredFiles = Arrays.asList(paramValue.split(";"));
+                                lIgnoredFiles = Arrays.asList(trimAll(paramValue.split(";")));
                                 break;
                         }
                     }
@@ -133,6 +146,13 @@ public class LogExtractor {
             System.exit(1);
         } else {
             System.out.println("INFO: Result file is " + sResultFile);
+        }
+
+        if (sResultFileModules.length() == 0) {
+            System.out.println("ERROR: No result file for modules!");
+            System.exit(1);
+        } else {
+            System.out.println("INFO: Result file for modules is " + sResultFileModules);
         }
 
         if (sDelimiter.length() == 0) {
@@ -169,7 +189,7 @@ public class LogExtractor {
         if (lIgnoredFiles.isEmpty()) {
             System.out.println("WARNING: No ignored files!");
         } else {
-            for (String ignored: lIgnoredFiles) {
+            for (String ignored : lIgnoredFiles) {
                 System.out.println("INFO: Ignored file contains " + ignored);
             }
         }
@@ -184,8 +204,8 @@ public class LogExtractor {
     private static void processLogFile(File fileEntryForProcess) {
         try {
             // IF ignore
-            for (String ignore: lIgnoredFiles) {
-                if (fileEntryForProcess.toString().contains(ignore)){
+            for (String ignore : lIgnoredFiles) {
+                if (fileEntryForProcess.toString().contains(ignore)) {
                     System.out.println("WARNING: Ignore file " + fileEntryForProcess);
                     return;
                 }
@@ -225,7 +245,7 @@ public class LogExtractor {
 
                 // if string contains search string - fill the flag and add found by data
                 for (String s : lSearchStrings) {
-                    if (str.contains(s)){
+                    if (str.contains(s)) {
                         logEntry.setForSave(true);
                         logEntry.addSetFoundBy(s);
                     }
@@ -235,5 +255,18 @@ public class LogExtractor {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Trim all elements in string[]
+     *
+     * @param s massive
+     * @return trimmed elements in massive
+     */
+    private static String[] trimAll(String[] s) {
+        for (int i = 0; i < s.length; i++) {
+            s[i] = s[i].trim();
+        }
+        return s;
     }
 }
