@@ -3,30 +3,17 @@ import java.util.*;
 
 public class LogExtractor {
 
-    private static String
-            sLogDir = "",
-            sResultFile = "",
-            sResultFileModules = "",
-            sDelimiter = "",
-            sBeforeTimestamp = "",
-            sFileSeparator = "";
-
-    private static HashMap<String, String> config = new HashMap<>();
-
-    private static List<String> lIgnoredFiles = new ArrayList<>();
-
-    private static List<String> lSearchStrings = new ArrayList<>();
-
     private static ArrayList<LogEntry> entryArrayList = new ArrayList<>();
 
+    private static Config config = new Config("config.properties");
+
     public static void main(String[] args) {
+
         try {
-            System.out.println("INFO: Starting program, reading config file...");
-            // read config file
-            readConfig();
+            System.out.println("INFO: Starting program...");
 
             // get list of files and process them
-            File fLogDir = new File(sLogDir);
+            File fLogDir = new File(config.getValue("LOG_DIR").get(0));
             System.out.println("INFO: Start reading each file...");
             for (final File fileEntry : Objects.requireNonNull(fLogDir.listFiles())) {
                 if (!fileEntry.isDirectory()) {
@@ -45,25 +32,25 @@ public class LogExtractor {
             entryArrayList.sort(Comparator.comparing(LogEntry::getTimestamp));
 
             // Write to file
-            System.out.println("INFO: Writing to file " + sResultFile);
-            System.out.println("INFO: Writing to file " + sResultFileModules);
-            PrintWriter writer = new PrintWriter(sResultFile, "UTF-8");
-            PrintWriter writerBrief = new PrintWriter(sResultFileModules, "UTF-8");
+            System.out.println("INFO: Writing to file " + config.getValue("RESULT_FILE").get(0));
+            System.out.println("INFO: Writing to file " + config.getValue("RESULT_FILE_MODULES").get(0));
+            PrintWriter writer = new PrintWriter(config.getValue("RESULT_FILE").get(0), "UTF-8");
+            PrintWriter writerBrief = new PrintWriter(config.getValue("RESULT_FILE_MODULES").get(0), "UTF-8");
 
             for (LogEntry entry : entryArrayList) {
 //                System.out.println(entry.getsFileName());
 //                System.out.println(entry.getTranData());
                 writer.println();
                 writer.println("\t\t"
-                        + sFileSeparator
+                        + config.getValue("SEPARATOR").get(0)
                         + " File: "
                         + entry.getFileName()
                         + " "
-                        + sFileSeparator
+                        + config.getValue("SEPARATOR").get(0)
                         + " Found by: "
                         + entry.getStringSetFoundBy().toString()
                         + " "
-                        + sFileSeparator);
+                        + config.getValue("SEPARATOR").get(0));
                 writer.println();
                 writer.println(entry.getTranData());
 
@@ -86,92 +73,6 @@ public class LogExtractor {
     }
 
     /**
-     * Read config file
-     */
-    private static void readConfig() {
-        try {
-            FileInputStream fileInputStream;
-            Properties prop = new Properties();
-            //обращаемся к файлу и получаем данные
-            fileInputStream = new FileInputStream("config.properties");
-            prop.load(fileInputStream);
-
-            sLogDir = prop.getProperty("LOG_DIR");
-            sResultFile = prop.getProperty("RESULT_FILE");
-            sResultFileModules = prop.getProperty("RESULT_FILE_MODULES");
-            sDelimiter = prop.getProperty("DELIMITER");
-            sBeforeTimestamp = prop.getProperty("BEFORE_TIMESTAMP");
-            lSearchStrings = Arrays.asList(trimAll(prop.getProperty("SEARCH_STRING").split(";")));
-            sFileSeparator = prop.getProperty("SEPARATOR");
-            lIgnoredFiles = Arrays.asList(trimAll(prop.getProperty("IGNORED_FILES_CONTAINS").split(";")));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // checking
-        if (sLogDir.length() == 0) {
-            System.out.println("ERROR: No log dir!");
-            System.exit(1);
-        } else {
-            System.out.println("INFO: Log dir is " + sLogDir);
-        }
-
-        if (sResultFile.length() == 0) {
-            System.out.println("ERROR: No result file!");
-            System.exit(1);
-        } else {
-            System.out.println("INFO: Result file is " + sResultFile);
-        }
-
-        if (sResultFileModules.length() == 0) {
-            System.out.println("ERROR: No result file for modules!");
-            System.exit(1);
-        } else {
-            System.out.println("INFO: Result file for modules is " + sResultFileModules);
-        }
-
-        if (sDelimiter.length() == 0) {
-            System.out.println("ERROR: No delimiter!");
-            System.exit(1);
-        } else {
-            System.out.println("INFO: Delimiter is " + sDelimiter);
-        }
-
-        if (lSearchStrings.isEmpty()) {
-            System.out.println("ERROR: No search string!");
-            System.exit(1);
-        } else {
-            for (String s : lSearchStrings) {
-                System.out.println("INFO: Search string is " + s);
-            }
-        }
-
-        if (sBeforeTimestamp.length() == 0) {
-            System.out.println("ERROR: No prefix string!");
-            System.exit(1);
-        } else {
-            System.out.println("INFO: Prefix string is " + sBeforeTimestamp);
-        }
-
-        if (sFileSeparator.length() == 0) {
-            System.out.println("ERROR: No file separator!");
-            System.exit(1);
-        } else {
-            System.out.println("INFO: File separator is " + sFileSeparator);
-        }
-
-        // Ignored files
-        if (lIgnoredFiles.isEmpty()) {
-            System.out.println("WARNING: No ignored files!");
-        } else {
-            for (String ignored : lIgnoredFiles) {
-                System.out.println("INFO: Ignored file contains " + ignored);
-            }
-        }
-
-    }
-
-    /**
      * Processing log file
      *
      * @param fileEntryForProcess log file
@@ -179,7 +80,7 @@ public class LogExtractor {
     private static void processLogFile(File fileEntryForProcess) {
         try {
             // IF ignore
-            for (String ignore : lIgnoredFiles) {
+            for (String ignore : config.getValue("IGNORED_FILES_CONTAINS")) {
                 if (fileEntryForProcess.toString().contains(ignore)) {
                     System.out.println("WARNING: Ignore file " + fileEntryForProcess);
                     return;
@@ -201,7 +102,7 @@ public class LogExtractor {
 
             while ((str = in.readLine()) != null) {
                 // if line starts with delimiter
-                if (str.startsWith(sDelimiter)) {
+                if (str.startsWith(config.getValue("DELIMITER").get(0))) {
                     // check if save needed and start new entry
                     if (logEntry.isForSave()) entryArrayList.add(logEntry);
                     logEntry = new LogEntry(fileEntryForProcess.getName());
@@ -211,7 +112,8 @@ public class LogExtractor {
                 logEntry.appendTranData(str + "\r\n");
 
                 // if string starts with prefix and it is first after delimiter
-                if (isFirstAfterDelimiter && str.startsWith(sBeforeTimestamp)) {
+                if (isFirstAfterDelimiter
+                        && str.startsWith(config.getValue("BEFORE_TIMESTAMP").get(0))) {
                     isFirstAfterDelimiter = false;
                     // extract timestamp
                     //>>1545643874.287122:
@@ -219,7 +121,7 @@ public class LogExtractor {
                 }
 
                 // if string contains search string - fill the flag and add found by data
-                for (String s : lSearchStrings) {
+                for (String s : config.getValue("SEARCH_STRING")) {
                     if (str.contains(s)) {
                         logEntry.setForSave(true);
                         logEntry.addSetFoundBy(s);
@@ -232,16 +134,5 @@ public class LogExtractor {
         }
     }
 
-    /**
-     * Trim all elements in string[]
-     *
-     * @param s massive
-     * @return trimmed elements in massive
-     */
-    private static String[] trimAll(String[] s) {
-        for (int i = 0; i < s.length; i++) {
-            s[i] = s[i].trim();
-        }
-        return s;
-    }
+
 }
