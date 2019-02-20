@@ -21,9 +21,18 @@ public class Config {
             prop.load(fileInputStream);
 
             List<String> current;
+            String sCMD;
             // Заполняем конфиг значениями из конф файла
             for (String key : prop.stringPropertyNames()) {
                 String value = prop.getProperty(key);
+
+                // Overload values from config, if -Dhello="hello"
+                if ((sCMD = System.getProperty(key)) != null) {
+                    System.out.format("WARNING! Found -D overloading for key = %s! " +
+                            "Config value = %s, " +
+                            "property value = %s%nDo overload!%n", key, value, sCMD);
+                    value = sCMD;
+                }
 
                 if (value.contains(";")) {
                     //we have multiple values
@@ -34,21 +43,6 @@ public class Config {
                 }
                 System.out.println(key + "=" + value);
                 hConfig.put(key, current);
-            }
-
-            // check properties -Dhello="hello"
-            System.out.println("INFO: Checking and override properties");
-            String sProperty;
-            if ((sProperty = System.getProperty("LOG_DIR")) != null) {
-                System.out.println("WARNING! Overload LOG_DIR to value = " + sProperty);
-                if (sProperty.contains(";")) {
-                    //we have multiple values
-                    current = Arrays.asList(trimAll(sProperty.split(";")));
-                } else {
-                    // we have single value
-                    current = Collections.singletonList(sProperty.trim());
-                }
-                hConfig.replace("LOG_DIR", current);
             }
 
             // check data
