@@ -21,7 +21,7 @@ public class Config {
             prop.load(fileInputStream);
 
             List<String> current;
-
+            // Заполняем конфиг значениями из конф файла
             for (String key : prop.stringPropertyNames()) {
                 String value = prop.getProperty(key);
 
@@ -32,8 +32,23 @@ public class Config {
                     // we have single value
                     current = Collections.singletonList(value.trim());
                 }
-                System.out.println(key + "=>" + value);
+                System.out.println(key + "=" + value);
                 hConfig.put(key, current);
+            }
+
+            // check properties -Dhello="hello"
+            System.out.println("INFO: Checking and override properties");
+            String sProperty;
+            if ((sProperty = System.getProperty("LOG_DIR")) != null) {
+                System.out.println("WARNING! Overload LOG_DIR to value = " + sProperty);
+                if (sProperty.contains(";")) {
+                    //we have multiple values
+                    current = Arrays.asList(trimAll(sProperty.split(";")));
+                } else {
+                    // we have single value
+                    current = Collections.singletonList(sProperty.trim());
+                }
+                hConfig.replace("LOG_DIR", current);
             }
 
             // check data
@@ -79,8 +94,8 @@ public class Config {
         paramNames.add("SEARCH_STRING");
         paramNames.add("SEPARATOR");
 
-        for (String s : paramNames){
-            if (hConfig.get(s) == null){
+        for (String s : paramNames) {
+            if (hConfig.get(s) == null) {
                 System.out.println("ERROR: Property " + s + " not found!");
                 return false;
             }
