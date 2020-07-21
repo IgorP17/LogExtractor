@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Config {
 
-    private HashMap<String, List<String>> hConfig = new HashMap<>();
+    private final HashMap<String, List<String>> hConfig = new HashMap<>();
 
     /**
      * Load config
