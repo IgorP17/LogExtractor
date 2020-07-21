@@ -61,8 +61,7 @@ public class LogExtractor {
                         + "\t Timestamp: "
                         + entry.getTimestamp() / 1000000L
                         + "."
-                        + entry.getTimestamp() % 1000000L
-                        + System.lineSeparator());
+                        + String.format("%06d", entry.getTimestamp() % 1000000L));
             }
             writer.close();
             writerBrief.close();
@@ -117,7 +116,7 @@ public class LogExtractor {
                     isFirstAfterDelimiter = false;
                     // extract timestamp
                     //>>1545643874.287122:
-                    logEntry.setTimestamp(Long.valueOf(str.substring(2, 19).replace(".", "")));
+                    logEntry.setTimestamp(Long.parseLong(str.substring(2, 19).replace(".", "")));
                 }
 
                 // if string contains search string - fill the flag and add found by data
