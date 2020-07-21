@@ -35,8 +35,8 @@ public class LogExtractor {
             // Write to file
             System.out.println("INFO: Writing to file " + config.getValue("RESULT_FILE").get(0));
             System.out.println("INFO: Writing to file " + config.getValue("RESULT_FILE_MODULES").get(0));
-            PrintWriter writer = new PrintWriter(config.getValue("RESULT_FILE").get(0), StandardCharsets.UTF_8);
-            PrintWriter writerBrief = new PrintWriter(config.getValue("RESULT_FILE_MODULES").get(0), StandardCharsets.UTF_8);
+            PrintWriter writer = new PrintWriter(config.getValue("RESULT_FILE").get(0), "UTF-8");
+            PrintWriter writerBrief = new PrintWriter(config.getValue("RESULT_FILE_MODULES").get(0), "UTF-8");
 
             for (LogEntry entry : entryArrayList) {
 //                System.out.println(entry.getsFileName());
