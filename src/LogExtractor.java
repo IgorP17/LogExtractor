@@ -1,11 +1,12 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class LogExtractor {
 
-    private static ArrayList<LogEntry> entryArrayList = new ArrayList<>();
+    private static final ArrayList<LogEntry> entryArrayList = new ArrayList<>();
 
-    private static Config config = new Config("config.properties");
+    private static final Config config = new Config("config.properties");
 
     public static void main(String[] args) {
 
@@ -34,8 +35,8 @@ public class LogExtractor {
             // Write to file
             System.out.println("INFO: Writing to file " + config.getValue("RESULT_FILE").get(0));
             System.out.println("INFO: Writing to file " + config.getValue("RESULT_FILE_MODULES").get(0));
-            PrintWriter writer = new PrintWriter(config.getValue("RESULT_FILE").get(0), "UTF-8");
-            PrintWriter writerBrief = new PrintWriter(config.getValue("RESULT_FILE_MODULES").get(0), "UTF-8");
+            PrintWriter writer = new PrintWriter(config.getValue("RESULT_FILE").get(0), StandardCharsets.UTF_8);
+            PrintWriter writerBrief = new PrintWriter(config.getValue("RESULT_FILE_MODULES").get(0), StandardCharsets.UTF_8);
 
             for (LogEntry entry : entryArrayList) {
 //                System.out.println(entry.getsFileName());
@@ -54,8 +55,7 @@ public class LogExtractor {
                 writer.println();
                 writer.println(entry.getTranData());
 
-                writerBrief.println("FILE: "
-                        + entry.getFileName()
+                writerBrief.println(entry.getFileName()
                         + "\tFound by: "
                         + entry.getStringSetFoundBy().toString()
                         + "\t Timestamp: "
@@ -91,7 +91,7 @@ public class LogExtractor {
             // start reading
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(fileEntryForProcess), "UTF8"));
+                            new FileInputStream(fileEntryForProcess), StandardCharsets.UTF_8));
 
             String str;
 
